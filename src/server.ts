@@ -6,7 +6,7 @@ import type { SpatialSceneManager } from './scene/spatial-scene.js';
 import type { BoundingBox2D, Point3D, ShotType } from './types.js';
 import { getZoneById, getZoneTargetPoint } from './venue/model.js';
 import { solvePtzForTarget } from './camera/solver.js';
-import { getCameraWorldPose, projectBoundingBoxToFloor } from './camera/projection.js';
+import { getCameraWorldPose, projectBoundingBoxToFloor, triangulateCameras } from './camera/projection.js';
 import { findZoneAtPoint } from './venue/model.js';
 
 export function createServer(
@@ -196,6 +196,105 @@ export function createServer(
 
     const solution = solvePtzForTarget(cam, targetPoint, { shotType, targetZoneId });
     return solution;
+  });
+
+  // Triangulation: Intersect rays from 2 cameras (optical theodolite / FreeD survey)
+  app.post<{
+    Body: {
+      cam1: {
+        cameraId: string;
+        pan?: number | undefined;
+        panDeg?: number | undefined;
+        tilt?: number | undefined;
+        tiltDeg?: number | undefined;
+        zoom?: number | undefined;
+        u?: number | undefined;
+        v?: number | undefined;
+      };
+      cam2: {
+        cameraId: string;
+        pan?: number | undefined;
+        panDeg?: number | undefined;
+        tilt?: number | undefined;
+        tiltDeg?: number | undefined;
+        zoom?: number | undefined;
+        u?: number | undefined;
+        v?: number | undefined;
+      };
+    };
+  }>('/api/v1/triangulate', async (req, reply) => {
+    const { cam1: cam1Input, cam2: cam2Input } = req.body ?? {};
+    if (!cam1Input?.cameraId || !cam2Input?.cameraId) {
+      return reply.code(400).send({ error: 'Missing cam1.cameraId or cam2.cameraId' });
+    }
+
+    const snapshot = sceneManager.getSnapshot();
+    const cam1 = snapshot.cameras[cam1Input.cameraId];
+    const cam2 = snapshot.cameras[cam2Input.cameraId];
+
+    if (!cam1) {
+      return reply.code(404).send({ error: `Camera ${cam1Input.cameraId} not found` });
+    }
+    if (!cam2) {
+      return reply.code(404).send({ error: `Camera ${cam2Input.cameraId} not found` });
+    }
+
+    const tel1 = {
+      camId: cam1.telemetry?.camId ?? 1,
+      pan: cam1Input.pan ?? cam1Input.panDeg ?? cam1.telemetry?.pan ?? 0,
+      tilt: cam1Input.tilt ?? cam1Input.tiltDeg ?? cam1.telemetry?.tilt ?? 0,
+      roll: cam1.telemetry?.roll ?? 0,
+      zoom: cam1Input.zoom ?? cam1.telemetry?.zoom ?? 0,
+    };
+
+    const tel2 = {
+      camId: cam2.telemetry?.camId ?? 2,
+      pan: cam2Input.pan ?? cam2Input.panDeg ?? cam2.telemetry?.pan ?? 0,
+      tilt: cam2Input.tilt ?? cam2Input.tiltDeg ?? cam2.telemetry?.tilt ?? 0,
+      roll: cam2.telemetry?.roll ?? 0,
+      zoom: cam2Input.zoom ?? cam2.telemetry?.zoom ?? 0,
+    };
+
+    const pose1 = getCameraWorldPose(cam1.mount, tel1);
+    const pose2 = getCameraWorldPose(cam2.mount, tel2);
+
+    const uv1 = { u: cam1Input.u ?? 0.5, v: cam1Input.v ?? 0.5 };
+    const uv2 = { u: cam2Input.u ?? 0.5, v: cam2Input.v ?? 0.5 };
+
+    const result = triangulateCameras(pose1, pose2, uv1, uv2);
+    if (!result) {
+      return reply.code(422).send({ error: 'Rays are parallel or do not converge' });
+    }
+
+    const zone = findZoneAtPoint(sceneManager.venue, result.point);
+
+    return {
+      ok: true,
+      point: {
+        x: Math.round(result.point.x * 1000) / 1000,
+        y: Math.round(result.point.y * 1000) / 1000,
+        z: Math.round(result.point.z * 1000) / 1000,
+      },
+      errorMeters: Math.round(result.errorMeters * 1000) / 1000,
+      t1: Math.round(result.t1 * 100) / 100,
+      t2: Math.round(result.t2 * 100) / 100,
+      isBehindCamera: result.isBehindCamera,
+      zone: zone ? { id: zone.id, name: zone.name } : null,
+      cameras: {
+        cam1: {
+          id: cam1Input.cameraId,
+          position: pose1.position,
+          panDeg: Math.round(pose1.panDeg * 10) / 10,
+          tiltDeg: Math.round(pose1.tiltDeg * 10) / 10,
+        },
+        cam2: {
+          id: cam2Input.cameraId,
+          position: pose2.position,
+          panDeg: Math.round(pose2.panDeg * 10) / 10,
+          tiltDeg: Math.round(pose2.tiltDeg * 10) / 10,
+        },
+      },
+    };
   });
 
   // Server-Sent Events (SSE) stream for live spatial changes

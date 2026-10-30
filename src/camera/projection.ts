@@ -16,7 +16,7 @@ import {
   mat4RotationX,
   mat4RotationY,
 } from '../math/matrix4.js';
-import { createRay, intersectRayHorizontalPlane } from '../math/ray.js';
+import { createRay, intersectRayHorizontalPlane, triangulateRays, type RayTriangulationResult } from '../math/ray.js';
 import { getCameraOptics, AVER_PTZ330_INTRINSICS } from './calibration.js';
 
 export interface CameraPose {
@@ -146,5 +146,30 @@ export function computeCameraFrustum(
     vfovDeg: pose.vfovDeg,
     focalLengthMm: pose.focalLengthMm,
     activeZoneId: null,
+  };
+}
+
+/**
+ * Triangulates a 3D point in the venue from two camera poses and image coordinates.
+ * Defaults to the camera optical center crosshairs (u = 0.5, v = 0.5) if uv not provided.
+ */
+export function triangulateCameras(
+  cam1Pose: CameraPose,
+  cam2Pose: CameraPose,
+  uv1: { u: number; v: number } = { u: 0.5, v: 0.5 },
+  uv2: { u: number; v: number } = { u: 0.5, v: 0.5 }
+): (RayTriangulationResult & { ray1: Ray3D; ray2: Ray3D }) | null {
+  const ray1 = castImageRay(cam1Pose, uv1.u, uv1.v);
+  const ray2 = castImageRay(cam2Pose, uv2.u, uv2.v);
+
+  const result = triangulateRays(ray1, ray2);
+  if (!result) {
+    return null;
+  }
+
+  return {
+    ...result,
+    ray1,
+    ray2,
   };
 }

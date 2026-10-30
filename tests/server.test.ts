@@ -74,6 +74,39 @@ test('Fastify server routes', async () => {
   const sceneAfter = sceneManager.getSnapshot();
   assert.equal(sceneAfter.cameras.cam1?.telemetry?.pan, 10.5);
 
+  // Triangulation between cam1 and cam2
+  // We can solve ptz for a target point first, then pass those angles back to triangulate!
+  const targetPt = { x: 0, y: 5, z: 0.4 };
+  const s1 = app.inject({
+    method: 'POST',
+    url: '/api/v1/solve-ptz',
+    payload: { cameraId: 'cam1', target: targetPt },
+  });
+  const s2 = app.inject({
+    method: 'POST',
+    url: '/api/v1/solve-ptz',
+    payload: { cameraId: 'cam2', target: targetPt },
+  });
+  const [resS1, resS2] = await Promise.all([s1, s2]);
+  const sol1 = resS1.json();
+  const sol2 = resS2.json();
+
+  const resTri = await app.inject({
+    method: 'POST',
+    url: '/api/v1/triangulate',
+    payload: {
+      cam1: { cameraId: 'cam1', panDeg: sol1.pan, tiltDeg: sol1.tilt },
+      cam2: { cameraId: 'cam2', panDeg: sol2.pan, tiltDeg: sol2.tilt },
+    },
+  });
+  assert.equal(resTri.statusCode, 200);
+  const triData = resTri.json();
+  assert.equal(triData.ok, true);
+  assert.ok(triData.errorMeters < 0.05); // within 5cm
+  assert.ok(Math.abs(triData.point.x - targetPt.x) < 0.1);
+  assert.ok(Math.abs(triData.point.y - targetPt.y) < 0.1);
+  assert.ok(Math.abs(triData.point.z - targetPt.z) < 0.1);
+
   sceneManager.stop();
   await app.close();
 });
