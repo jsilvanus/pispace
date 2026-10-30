@@ -74,6 +74,53 @@
           }
         }
       }
+    },
+    "occluders": {
+      "type": "array",
+      "description": "3D physical structures that block virtual graphics (holdout / keymask meshes)",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "kind", "position"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "kind": { "type": "string", "enum": ["mesh", "box", "cylinder", "polygon_wall"] },
+          "meshUrl": { "type": "string", "description": "URI to .glb / .gltf 3D model asset" },
+          "position": {
+            "type": "object",
+            "required": ["x", "y", "z"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            }
+          },
+          "rotation": {
+            "type": "object",
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            }
+          },
+          "scale": {
+            "type": "object",
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            }
+          },
+          "dimensions": {
+            "type": "object",
+            "properties": {
+              "width": { "type": "number" },
+              "height": { "type": "number" },
+              "depth": { "type": "number" }
+            }
+          }
+        }
+      }
     }
   }
 }

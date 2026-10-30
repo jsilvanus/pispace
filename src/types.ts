@@ -71,6 +71,25 @@ export interface SpatialZone {
   tags?: string[] | undefined;
 }
 
+export interface SpatialOccluder {
+  id: string;
+  name: string;
+  /** Type of geometry: 'mesh' (external glTF/GLB) or parametric 'box' | 'cylinder' | 'polygon_wall' */
+  kind: 'mesh' | 'box' | 'cylinder' | 'polygon_wall';
+  /** Path to glTF/GLB 3D model asset (e.g. "models/pulpit.glb") */
+  meshUrl?: string | undefined;
+  /** Anchor position in venue coordinates (meters) */
+  position: Point3D;
+  /** Rotation in degrees [pitch, yaw, roll] */
+  rotation?: { x: number; y: number; z: number } | undefined;
+  /** Scale factor (default [1, 1, 1]) */
+  scale?: { x: number; y: number; z: number } | undefined;
+  /** Parametric dimensions if kind is box/cylinder (meters) */
+  dimensions?: { width: number; height: number; depth: number } | undefined;
+  /** Polygon vertices if kind is polygon_wall */
+  polygon?: Point2D[] | undefined;
+}
+
 export interface VenueModel {
   name: string;
   description: string;
@@ -82,6 +101,8 @@ export interface VenueModel {
   originDescription: string;
   cameras: Record<string, CameraMount>;
   zones: SpatialZone[];
+  /** 3D physical structures used for keymasking / occlusion matte in AR graphics */
+  occluders?: SpatialOccluder[] | undefined;
 }
 
 export interface Subject3D {
