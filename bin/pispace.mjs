@@ -94,6 +94,24 @@ async function main() {
       break;
     }
 
+    case 'occluders': {
+      const occluders = await request('/api/v1/occluders');
+      console.log('=== 3D OCCLUDERS (AR KEYMASKS) ===');
+      if (occluders.length === 0) {
+        console.log('(No occluders configured in this venue)');
+      } else {
+        for (const o of occluders) {
+          console.log(`[${o.id}] ${o.name}`);
+          console.log(`  Kind: ${o.kind}${o.meshUrl ? ` (Asset: ${o.meshUrl})` : ''}`);
+          console.log(`  Position: (${o.position.x}, ${o.position.y}, ${o.position.z}) m`);
+          if (o.dimensions) {
+            console.log(`  Dimensions: ${o.dimensions.width}m W x ${o.dimensions.height}m H x ${o.dimensions.depth}m D`);
+          }
+        }
+      }
+      break;
+    }
+
     case 'solve': {
       const cameraId = flags.camera || flags.c || 'cam1';
       const zoneId = flags.zone || flags.z;
@@ -157,6 +175,7 @@ pispace - Spatial engine for the Pi ecosystem
 Usage:
   pispace scene                         Display live spatial scene & tracked subjects
   pispace zones                         List defined 3D venue zones
+  pispace occluders                     List 3D physical occluders for AR keymasking
   pispace solve --camera <id> --zone <zone> [--shot <type>]
                                         Solve Pan/Tilt/Zoom to frame a zone
   pispace project --camera <id> --bbox <ymin,xmin,ymax,xmax> [--stage <m>]

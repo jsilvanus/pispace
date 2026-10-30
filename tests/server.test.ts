@@ -31,6 +31,12 @@ test('Fastify server routes', async () => {
   assert.ok(Array.isArray(resZones.json()));
   assert.ok(resZones.json().some((z: any) => z.id === 'pulpit'));
 
+  // Occluders
+  const resOcc = await app.inject({ method: 'GET', url: '/api/v1/occluders' });
+  assert.equal(resOcc.statusCode, 200);
+  assert.ok(Array.isArray(resOcc.json()));
+  assert.ok(resOcc.json().some((o: any) => o.id === 'pulpit_facade'));
+
   // Solve PTZ for Pulpit
   const resSolve = await app.inject({
     method: 'POST',

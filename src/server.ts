@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import fastify, { type FastifyInstance } from 'fastify';
 import type { AppConfig } from './config.js';
 import type { SpatialSceneManager } from './scene/spatial-scene.js';
@@ -48,6 +50,38 @@ export function createServer(
       ...zone,
       targetPoint: getZoneTargetPoint(zone),
     };
+  });
+
+  // 3D Occluders list for broadcast AR keymasking
+  app.get('/api/v1/occluders', async () => {
+    return sceneManager.venue.occluders ?? [];
+  });
+
+  // Specific 3D occluder
+  app.get<{ Params: { id: string } }>('/api/v1/occluders/:id', async (req, reply) => {
+    const occluder = (sceneManager.venue.occluders ?? []).find((o) => o.id === req.params.id);
+    if (!occluder) {
+      return reply.code(404).send({ error: 'Occluder not found' });
+    }
+    return occluder;
+  });
+
+  // Serve 3D model assets (.glb / .gltf)
+  app.get<{ Params: { filename: string } }>('/models/:filename', async (req, reply) => {
+    const filename = path.basename(req.params.filename);
+    const modelPath = path.resolve('models', filename);
+
+    if (!fs.existsSync(modelPath)) {
+      return reply.code(404).send({ error: `3D model ${filename} not found` });
+    }
+
+    const ext = path.extname(filename).toLowerCase();
+    const contentType = ext === '.glb' ? 'model/gltf-binary' : ext === '.gltf' ? 'model/gltf+json' : 'application/octet-stream';
+
+    reply.header('Content-Type', contentType);
+    reply.header('Access-Control-Allow-Origin', '*');
+    const stream = fs.createReadStream(modelPath);
+    return reply.send(stream);
   });
 
   // Push FreeD telemetry directly
