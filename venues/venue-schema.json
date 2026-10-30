@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PispaceVenueModel",
+  "type": "object",
+  "required": ["name", "dimensions", "cameras", "zones"],
+  "properties": {
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "dimensions": {
+      "type": "object",
+      "required": ["widthMeters", "lengthMeters", "heightMeters"],
+      "properties": {
+        "widthMeters": { "type": "number", "minimum": 0 },
+        "lengthMeters": { "type": "number", "minimum": 0 },
+        "heightMeters": { "type": "number", "minimum": 0 }
+      }
+    },
+    "originDescription": { "type": "string" },
+    "cameras": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "name", "position", "baseOrientation"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "position": {
+            "type": "object",
+            "required": ["x", "y", "z"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            }
+          },
+          "baseOrientation": {
+            "type": "object",
+            "required": ["pan", "tilt", "roll"],
+            "properties": {
+              "pan": { "type": "number" },
+              "tilt": { "type": "number" },
+              "roll": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "floorHeight", "ceilingHeight", "polygon"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "floorHeight": { "type": "number" },
+          "ceilingHeight": { "type": "number" },
+          "color": { "type": "string" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "polygon": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "object",
+              "required": ["x", "y"],
+              "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

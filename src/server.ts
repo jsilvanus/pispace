@@ -20,6 +20,11 @@ export function createServer(
     return { ok: true, service: 'pispace', version: '0.1.0' };
   });
 
+  // Current venue model (geometry, dimensions, cameras, zones)
+  app.get('/api/v1/venue', async () => {
+    return sceneManager.venue;
+  });
+
   // Current live scene
   app.get('/api/v1/scene', async () => {
     return sceneManager.getSnapshot();

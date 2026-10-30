@@ -1,5 +1,8 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { loadConfig } from './config.js';
 import { KESKUSKIRKKO_VENUE } from './venue/keskuskirkko.js';
+import { loadVenueFromFile } from './venue/model.js';
 import { SpatialSceneManager } from './scene/spatial-scene.js';
 import { GatewayClient } from './scene/gateway-client.js';
 import { createServer } from './server.js';
@@ -7,8 +10,20 @@ import { createServer } from './server.js';
 async function main(): Promise<void> {
   const config = loadConfig();
 
+  let venue = KESKUSKIRKKO_VENUE;
+  if (config.venueFile && fs.existsSync(config.venueFile)) {
+    console.log(`[pispace] Loading venue configuration from ${config.venueFile}`);
+    venue = loadVenueFromFile(config.venueFile);
+  } else {
+    const defaultJson = path.resolve('venues/keskuskirkko.json');
+    if (fs.existsSync(defaultJson)) {
+      console.log(`[pispace] Loading default venue configuration from ${defaultJson}`);
+      venue = loadVenueFromFile(defaultJson);
+    }
+  }
+
   const sceneManager = new SpatialSceneManager({
-    venue: KESKUSKIRKKO_VENUE,
+    venue,
   });
 
   const gatewayClient = new GatewayClient(sceneManager, {
