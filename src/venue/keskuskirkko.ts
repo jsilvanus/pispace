@@ -1,0 +1,145 @@
+import type { VenueModel } from '../types.js';
+
+/**
+ * Default spatial venue geometry for Riihimäen Keskuskirkko sanctuary.
+ * Origin (0, 0, 0): Floor level at the communion rail / chancel center.
+ * +X: Sanctuary Right (South)
+ * -X: Sanctuary Left (North, Pulpit side)
+ * +Y: Longitudinal forward towards Altar wall
+ * -Y: Longitudinal back towards Organ balcony & entrance
+ * +Z: Elevation height in meters above nave floor
+ */
+export const KESKUSKIRKKO_VENUE: VenueModel = {
+  name: 'Riihimäen Keskuskirkko',
+  description: 'Sanctuary layout with Chancel, Altar, Pulpit, Lectern, Choir, and Organ Gallery',
+  dimensions: {
+    widthMeters: 16.0,
+    lengthMeters: 30.0,
+    heightMeters: 14.0,
+  },
+  originDescription: 'Sanctuary floor at center of the communion rail curve',
+  cameras: {
+    cam1: {
+      id: 'cam1',
+      name: 'Cam 1 (Side Wall / Chancel Pillar)',
+      // Mounted on right chancel wall looking across at pulpit and altar
+      position: { x: 5.2, y: 1.5, z: 3.6 },
+      baseOrientation: {
+        pan: 250.0,
+        tilt: -12.0,
+        roll: 0.0,
+      },
+    },
+    cam2: {
+      id: 'cam2',
+      name: 'Cam 2 (Organ Gallery / Balcony)',
+      // Mounted centrally on rear balcony looking straight down the nave to altar
+      position: { x: 0.0, y: -14.5, z: 5.0 },
+      baseOrientation: {
+        pan: 0.0,
+        tilt: -8.0,
+        roll: 0.0,
+      },
+    },
+  },
+  zones: [
+    {
+      id: 'pulpit',
+      name: 'Saarnastuoli (Pulpit)',
+      floorHeight: 1.3, // Elevated pulpit balcony
+      ceilingHeight: 4.5,
+      color: '#e74c3c',
+      tags: ['speaker', 'sermon', 'liturgy'],
+      polygon: [
+        { x: -4.5, y: -0.5 },
+        { x: -2.6, y: -0.5 },
+        { x: -2.6, y: 1.8 },
+        { x: -4.5, y: 1.8 },
+      ],
+    },
+    {
+      id: 'lectern',
+      name: 'Lukupulpetti (Lectern)',
+      floorHeight: 0.4, // Chancel stage elevation
+      ceilingHeight: 3.5,
+      color: '#f39c12',
+      tags: ['reader', 'readings', 'prayers'],
+      polygon: [
+        { x: 1.8, y: -0.5 },
+        { x: 3.5, y: -0.5 },
+        { x: 3.5, y: 1.6 },
+        { x: 1.8, y: 1.6 },
+      ],
+    },
+    {
+      id: 'altar',
+      name: 'Alttari (Altar Chancel)',
+      floorHeight: 0.4,
+      ceilingHeight: 12.0,
+      color: '#9b59b6',
+      tags: ['liturgy', 'eucharist', 'blessing'],
+      polygon: [
+        { x: -2.8, y: 0.6 },
+        { x: 2.8, y: 0.6 },
+        { x: 2.8, y: 5.2 },
+        { x: -2.8, y: 5.2 },
+      ],
+    },
+    {
+      id: 'communion_rail',
+      name: 'Alttarikaide (Communion Rail)',
+      floorHeight: 0.4,
+      ceilingHeight: 3.0,
+      color: '#3498db',
+      tags: ['communion'],
+      polygon: [
+        { x: -3.2, y: -0.8 },
+        { x: 3.2, y: -0.8 },
+        { x: 3.2, y: 0.5 },
+        { x: -3.2, y: 0.5 },
+      ],
+    },
+    {
+      id: 'choir',
+      name: 'Kuorotila (Choir Area)',
+      floorHeight: 0.4,
+      ceilingHeight: 8.0,
+      color: '#2ecc71',
+      tags: ['music', 'choir'],
+      polygon: [
+        { x: 3.2, y: 0.6 },
+        { x: 6.5, y: 0.6 },
+        { x: 6.5, y: 4.5 },
+        { x: 3.2, y: 4.5 },
+      ],
+    },
+    {
+      id: 'organ_loft',
+      name: 'Urkuparvi (Organ Gallery)',
+      floorHeight: 4.5, // Balcony level
+      ceilingHeight: 12.0,
+      color: '#1abc9c',
+      tags: ['music', 'organist'],
+      polygon: [
+        { x: -6.0, y: -20.0 },
+        { x: 6.0, y: -20.0 },
+        { x: 6.0, y: -13.5 },
+        { x: -6.0, y: -13.5 },
+      ],
+    },
+    {
+      id: 'nave',
+      name: 'Kirkkosali (Nave / Pews)',
+      floorHeight: 0.0,
+      ceilingHeight: 12.0,
+      color: '#7f8c8d',
+      tags: ['congregation'],
+      polygon: [
+        { x: -7.0, y: -14.0 },
+        { x: 7.0, y: -14.0 },
+        { x: 7.0, y: -1.0 },
+        { x: -7.0, y: -1.0 },
+      ],
+    },
+  ],
+};

@@ -1,0 +1,31 @@
+{
+  "name": "pispace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Spatial engine for the Pi ecosystem: FreeD camera raycasting, 3D venue mapping, and zone verification",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "pispace": "bin/pispace.mjs"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "fastify": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.3"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ]
+}
