@@ -90,6 +90,29 @@ export interface SpatialOccluder {
   polygon?: Point2D[] | undefined;
 }
 
+export interface FloorPlatform {
+  id: string;
+  name: string;
+  /** Elevation in meters above nave ground (Z = 0) */
+  elevation: number;
+  thickness?: number | undefined;
+  polygon: Point2D[];
+  color?: string | undefined;
+}
+
+export interface VenueWall {
+  id: string;
+  name: string;
+  start: Point2D;
+  end: Point2D;
+  /** Base elevation of the wall. 0 for normal wall, or > 0 (e.g. 3.8m) for OPEN-BOTTOM wall / arch header! */
+  bottomZ: number;
+  /** Top elevation of the wall (e.g. 14.0m ceiling or 4.2m side aisle) */
+  topZ: number;
+  thickness: number;
+  color?: string | undefined;
+}
+
 export interface VenueModel {
   name: string;
   description: string;
@@ -103,6 +126,10 @@ export interface VenueModel {
   zones: SpatialZone[];
   /** 3D physical structures used for keymasking / occlusion matte in AR graphics */
   occluders?: SpatialOccluder[] | undefined;
+  /** Physical floor slabs and raised platforms (e.g. Altar dais, organ gallery) */
+  floors?: FloorPlatform[] | undefined;
+  /** Structural walls and open-bottom arch headers */
+  walls?: VenueWall[] | undefined;
 }
 
 export interface Subject3D {

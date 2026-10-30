@@ -155,5 +155,85 @@
       "position": { "x": 0.0, "y": 2.5, "z": 0.4 },
       "dimensions": { "width": 3.2, "depth": 1.2, "height": 1.0 }
     }
+  ],
+  "floors": [
+    {
+      "id": "altar_chancel_dais",
+      "name": "Alttarikoroke (Chancel Dais +0.40m)",
+      "elevation": 0.4,
+      "thickness": 0.4,
+      "color": "#252e3d",
+      "polygon": [
+        { "x": -5.0, "y": 0.0 },
+        { "x": 5.0, "y": 0.0 },
+        { "x": 5.0, "y": 5.6 },
+        { "x": -5.0, "y": 5.6 }
+      ]
+    },
+    {
+      "id": "organ_gallery_floor",
+      "name": "Urkuparven Lattia (Organ Gallery +4.50m)",
+      "elevation": 4.5,
+      "thickness": 0.5,
+      "color": "#1e293b",
+      "polygon": [
+        { "x": -7.5, "y": -14.8 },
+        { "x": 7.5, "y": -14.8 },
+        { "x": 7.5, "y": -10.5 },
+        { "x": -7.5, "y": -10.5 }
+      ]
+    }
+  ],
+  "walls": [
+    {
+      "id": "north_arcade_header",
+      "name": "North Arcade Wall (Open Bottom Arch)",
+      "start": { "x": -4.8, "y": -10.5 },
+      "end": { "x": -4.8, "y": 5.5 },
+      "bottomZ": 3.8,
+      "topZ": 14.0,
+      "thickness": 0.45,
+      "color": "#475569"
+    },
+    {
+      "id": "south_arcade_header",
+      "name": "South Arcade Wall (Open Bottom Arch)",
+      "start": { "x": 4.8, "y": -10.5 },
+      "end": { "x": 4.8, "y": 5.5 },
+      "bottomZ": 3.8,
+      "topZ": 14.0,
+      "thickness": 0.45,
+      "color": "#475569"
+    },
+    {
+      "id": "chancel_arch_header",
+      "name": "Chancel Triumphal Arch (Open Bottom)",
+      "start": { "x": -4.8, "y": 0.1 },
+      "end": { "x": 4.8, "y": 0.1 },
+      "bottomZ": 5.2,
+      "topZ": 14.0,
+      "thickness": 0.5,
+      "color": "#526071"
+    },
+    {
+      "id": "north_side_wall",
+      "name": "North Side Aisle Wall (Lower Ceiling 4.2m)",
+      "start": { "x": -8.0, "y": -14.8 },
+      "end": { "x": -8.0, "y": 5.8 },
+      "bottomZ": 0.0,
+      "topZ": 4.2,
+      "thickness": 0.4,
+      "color": "#334155"
+    },
+    {
+      "id": "south_side_wall",
+      "name": "South Side Aisle Wall (Lower Ceiling 4.2m)",
+      "start": { "x": 8.0, "y": -14.8 },
+      "end": { "x": 8.0, "y": 5.8 },
+      "bottomZ": 0.0,
+      "topZ": 4.2,
+      "thickness": 0.4,
+      "color": "#334155"
+    }
   ]
 }
