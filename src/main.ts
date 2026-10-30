@@ -13,6 +13,7 @@ async function main(): Promise<void> {
 
   const gatewayClient = new GatewayClient(sceneManager, {
     gatewayUrl: config.gatewayUrl,
+    apiKey: config.apiKey,
   });
 
   // Start listening to pigateway events
