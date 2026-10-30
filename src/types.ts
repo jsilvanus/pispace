@@ -74,8 +74,8 @@ export interface SpatialZone {
 export interface SpatialOccluder {
   id: string;
   name: string;
-  /** Type of geometry: 'mesh' (external glTF/GLB) or parametric 'box' | 'cylinder' | 'polygon_wall' */
-  kind: 'mesh' | 'box' | 'cylinder' | 'polygon_wall';
+  /** Type of geometry: 'mesh' (external glTF/GLB) or parametric 'box' | 'cylinder' | 'polygon_wall' | 'table' */
+  kind: 'mesh' | 'box' | 'cylinder' | 'polygon_wall' | 'table';
   /** Path to glTF/GLB 3D model asset (e.g. "models/pulpit.glb") */
   meshUrl?: string | undefined;
   /** Anchor position in venue coordinates (meters) */
@@ -111,6 +111,8 @@ export interface VenueWall {
   topZ: number;
   thickness: number;
   color?: string | undefined;
+  /** If true, wall is rendered translucent in 3D mode so interior is visible */
+  seeThrough?: boolean | undefined;
 }
 
 export interface VenueModel {

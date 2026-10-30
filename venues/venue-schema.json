@@ -84,7 +84,7 @@
         "properties": {
           "id": { "type": "string" },
           "name": { "type": "string" },
-          "kind": { "type": "string", "enum": ["mesh", "box", "cylinder", "polygon_wall"] },
+          "kind": { "type": "string", "enum": ["mesh", "box", "cylinder", "polygon_wall", "table"] },
           "meshUrl": { "type": "string", "description": "URI to .glb / .gltf 3D model asset" },
           "position": {
             "type": "object",
