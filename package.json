@@ -32,7 +32,7 @@
   "pi": {
     "service": "pispace",
     "displayName": "pispace",
-    "port": 3108,
+    "port": 3203,
     "healthEndpoint": "/health",
     "envPortVar": "PISPACE_PORT"
   }
