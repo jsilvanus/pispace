@@ -111,16 +111,16 @@ Configured for the church's two **AVer PTZ330** cameras:
 
 ```bash
 # View live scene & 3D tracked people
-npx pispace scene
+pnpm exec pispace scene
 
 # List venue zones
-npx pispace zones
+pnpm exec pispace zones
 
 # Calculate PTZ command to frame the pulpit with a medium shot
-npx pispace solve --camera cam1 --zone pulpit --shot medium
+pnpm exec pispace solve --camera cam1 --zone pulpit --shot medium
 
 # Project a camera bounding box into 3D world coordinates
-npx pispace project --camera cam1 --bbox 0.2,0.3,0.8,0.5 --stage 1.3
+pnpm exec pispace project --camera cam1 --bbox 0.2,0.3,0.8,0.5 --stage 1.3
 ```
 
 ---
@@ -129,14 +129,14 @@ npx pispace project --camera cam1 --bbox 0.2,0.3,0.8,0.5 --stage 1.3
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run unit & integration tests
-npm test
+pnpm test
 
 # Build TypeScript to dist/
-npm run build
+pnpm run build
 
 # Start daemon
-npm start
+pnpm start
 ```
