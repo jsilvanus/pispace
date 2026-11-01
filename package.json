@@ -1,6 +1,7 @@
 {
   "name": "pispace",
   "version": "0.1.0",
+  "packageManager": "pnpm@11.23.0",
   "private": true,
   "type": "module",
   "description": "Spatial engine for the Pi ecosystem: FreeD camera raycasting, 3D venue mapping, and zone verification",
@@ -27,5 +28,13 @@
   "files": [
     "dist",
     "bin"
-  ]
+  ],
+  "pi": {
+    "service": "pispace",
+    "layer": "Layer 2: Media pipeline",
+    "displayName": "pispace",
+    "port": 3203,
+    "healthEndpoint": "/health",
+    "envPortVar": "PISPACE_PORT"
+  }
 }

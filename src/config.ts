@@ -8,9 +8,9 @@ export interface AppConfig {
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
-  const port = Number(env.PISPACE_PORT ?? 3108);
+  const port = Number(env.PISPACE_PORT ?? 3203);
   const host = env.PISPACE_HOST ?? '0.0.0.0';
-  const gatewayUrl = env.PISPACE_GATEWAY_URL ?? env.PIGATEWAY_URL ?? 'http://127.0.0.1:3100';
+  const gatewayUrl = env.PISPACE_GATEWAY_URL ?? env.PIGATEWAY_URL ?? 'http://127.0.0.1:3000';
   const venueFile = env.PISPACE_VENUE_FILE?.trim() || undefined;
   const apiKey = env.PISPACE_API_KEY?.trim() || undefined;
   const corsOrigins = env.PISPACE_CORS_ORIGINS
