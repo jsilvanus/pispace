@@ -10,9 +10,9 @@ test('Fastify server routes', async () => {
   });
 
   const app = createServer(sceneManager, {
-    port: 3108,
+    port: 3203,
     host: '127.0.0.1',
-    gatewayUrl: 'http://127.0.0.1:3100',
+    gatewayUrl: 'http://127.0.0.1:3000',
   });
 
   // Health

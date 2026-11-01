@@ -28,7 +28,7 @@ It bridges **FreeD camera tracking telemetry** (physical Pan, Tilt, Roll, XYZ, a
                                │   └──────────────────────────────────┘  │
                                │                     │                   │
                                └─────────────────────┼───────────────────┘
-                                                     │ HTTP REST & SSE (Port 3108)
+                                                     │ HTTP REST & SSE (Port 3203)
                                                      ▼
                ┌─────────────────────┬─────────────────────┬─────────────────────┐
                ▼                     ▼                     ▼                     ▼
@@ -86,7 +86,7 @@ Configured for the church's two **AVer PTZ330** cameras:
 
 ---
 
-## 4. HTTP API (Port 3108)
+## 4. HTTP API (Port 3203)
 
 - `GET /health`: Health check (`{ ok: true, service: "pispace" }`).
 - `GET /api/v1/scene`: Current live spatial scene (all cameras, 3D tracked subjects, active zones).

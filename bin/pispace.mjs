@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const baseUrl = process.env.PISPACE_URL ?? 'http://127.0.0.1:3108';
+const baseUrl = process.env.PISPACE_URL ?? 'http://127.0.0.1:3203';
 
 function parseArgs(args) {
   const flags = {};
