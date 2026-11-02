@@ -1,6 +1,6 @@
 # pispace
 
-**pispace** is the spatial engine and geometric digital-twin service for the Pi production ecosystem (`pigateway`, `pimatrix`, `picontrol`, `pilight`, `picontrol-mcp`).
+**pispace** is the spatial engine and geometric digital-twin service for the Pi production ecosystem (`pigateway`, `pimatrix`, `picontrol`, `pitally`, `picontrol-mcp`).
 
 It bridges **FreeD camera tracking telemetry** (physical Pan, Tilt, Roll, XYZ, and optical Zoom) and **2D video perception** (bounding boxes from `fffleet` / YOLOX) with the **3D coordinate system of the venue**, determining who is standing where in the church in real time.
 
@@ -32,7 +32,7 @@ It bridges **FreeD camera tracking telemetry** (physical Pan, Tilt, Roll, XYZ, a
                                                      ▼
                ┌─────────────────────┬─────────────────────┬─────────────────────┐
                ▼                     ▼                     ▼                     ▼
-         [ picontrol ]         [ pimatrix ]           [ pilight ]        [ picontrol-mcp ]
+         [ picontrol ]         [ pimatrix ]           [ pitally ]        [ picontrol-mcp ]
          2D/3D Venue Map       Auto-Follow Crop       Spatial Tally      AI Agent Tools
 ```
 
