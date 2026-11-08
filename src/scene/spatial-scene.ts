@@ -20,7 +20,7 @@ export interface SpatialSceneOptions {
 }
 
 export class SpatialSceneManager extends EventEmitter {
-  public readonly venue: VenueModel;
+  private currentVenue: VenueModel;
   private readonly cameras = new Map<string, CameraSpatialState>();
   private readonly subjects = new Map<string, Subject3D>();
   private readonly subjectStaleMs: number;
@@ -28,22 +28,40 @@ export class SpatialSceneManager extends EventEmitter {
 
   constructor(options: SpatialSceneOptions) {
     super();
-    this.venue = options.venue;
+    this.currentVenue = options.venue;
     this.subjectStaleMs = options.subjectStaleMs ?? 5000;
-
-    // Initialize configured cameras
-    for (const [id, mount] of Object.entries(this.venue.cameras)) {
-      this.cameras.set(id, {
-        id,
-        mount,
-        telemetry: null,
-        frustum: null,
-        isStreaming: false,
-        onAir: false,
-      });
-    }
-
+    this.syncCameras();
     this.startSweeper();
+  }
+
+  public get venue(): VenueModel {
+    return this.currentVenue;
+  }
+
+  /**
+   * Replaces the venue model (e.g. pushed from an editor). Camera telemetry is kept for
+   * cameras that still exist; their mounts follow the new model. Subjects are cleared,
+   * because their zones refer to the old geometry.
+   */
+  public setVenue(venue: VenueModel): void {
+    this.currentVenue = venue;
+    this.syncCameras();
+    this.subjects.clear();
+    this.emit('venue-updated', venue);
+  }
+
+  private syncCameras(): void {
+    for (const id of [...this.cameras.keys()]) {
+      if (!(id in this.currentVenue.cameras)) this.cameras.delete(id);
+    }
+    for (const [id, mount] of Object.entries(this.currentVenue.cameras)) {
+      const existing = this.cameras.get(id);
+      if (existing) {
+        existing.mount = mount;
+      } else {
+        this.cameras.set(id, { id, mount, telemetry: null, frustum: null, isStreaming: false, onAir: false });
+      }
+    }
   }
 
   public stop(): void {
