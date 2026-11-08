@@ -132,6 +132,63 @@ export interface VenueModel {
   floors?: FloorPlatform[] | undefined;
   /** Structural walls and open-bottom arch headers */
   walls?: VenueWall[] | undefined;
+  /** Named storeys (e.g. ground floor, gallery) used to filter maps */
+  levels?: VenueLevel[] | undefined;
+  /** Pews, tables, pulpit, organ and other furnishings (for maps and 3D views, not keymasking) */
+  furniture?: VenueFurniture[] | undefined;
+  /** Stairs and ramps between heights */
+  stairs?: VenueStair[] | undefined;
+  /** Doors and escape-route exits */
+  exits?: VenueExit[] | undefined;
+  /** Side rooms (sacristy, kitchen, WC) shown as labelled areas */
+  rooms?: VenueRoom[] | undefined;
+  /** Where the geometry came from and whether it was measured */
+  source?: { method?: string | undefined; pixelsPerMeter?: number | undefined; verified?: boolean | undefined } | undefined;
+}
+
+export interface VenueLevel {
+  id: string;
+  name: string;
+  /** Floor elevation of the storey in meters */
+  elevation: number;
+}
+
+export interface VenueFurniture {
+  id: string;
+  name: string;
+  kind: 'pew' | 'table' | 'altar' | 'pulpit' | 'rail' | 'organ' | 'piano' | 'bench' | 'other';
+  shape?: 'box' | 'cylinder' | undefined;
+  /** Footprint centre; z is the base height the item stands on */
+  center: Point3D;
+  /** width along local X, depth along local Y, height up */
+  size: { width: number; depth: number; height: number };
+  /** Counter-clockwise rotation about +Z in degrees (from +X towards +Y) */
+  rotationDeg?: number | undefined;
+  color?: string | undefined;
+}
+
+export interface VenueStair {
+  id: string;
+  name: string;
+  polygon: Point2D[];
+  fromZ: number;
+  toZ: number;
+}
+
+export interface VenueExit {
+  id: string;
+  name: string;
+  position: Point3D;
+  /** VenueLevel id */
+  level?: string | undefined;
+}
+
+export interface VenueRoom {
+  id: string;
+  name: string;
+  kind?: string | undefined;
+  floorZ: number;
+  polygon: Point2D[];
 }
 
 export interface Subject3D {
