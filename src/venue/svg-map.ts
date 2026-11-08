@@ -1,10 +1,13 @@
 import type { Point2D, VenueModel } from '../types.js';
+import { resolveFurniture } from './layouts.js';
 
 export interface SvgMapOptions {
   /** Level id (from venue.levels) to draw; everything else is faded. Default: all. */
   level?: string | undefined;
   /** Pixels per meter. Default 20. */
   scale?: number | undefined;
+  /** Layout id whose movable objects are drawn. Default: the active layout. */
+  layout?: string | undefined;
   /** Draw zones as coloured outlines. Default true. */
   zones?: boolean | undefined;
 }
@@ -67,12 +70,12 @@ export function renderVenueSvg(venue: VenueModel, options: SvgMapOptions = {}): 
       out.push(`<polygon points="${path(z.polygon)}" fill="none" stroke="${esc(z.color ?? '#f97316')}" stroke-width="1.5" stroke-dasharray="4 3"${fade(onLevel(z.floorHeight))}><title>${esc(z.name)}</title></polygon>`);
     }
   }
-  for (const f of venue.furniture ?? []) {
+  for (const f of resolveFurniture(venue, options.layout)) {
     const a = ((f.rotationDeg ?? 0) * Math.PI) / 180;
     const w = f.size.width / 2;
     const d = f.size.depth / 2;
     const on = onLevel(f.center.z);
-    const color = esc(f.color ?? '#64748b');
+    const color = esc(f.color ?? (f.movable ? '#b45309' : '#64748b'));
     if (f.shape === 'cylinder') {
       out.push(`<ellipse cx="${sx(f.center)}" cy="${sy(f.center)}" rx="${r2(d * scale)}" ry="${r2(w * scale)}" fill="${color}" fill-opacity="0.6"${fade(on)}><title>${esc(f.name)}</title></ellipse>`);
       continue;
