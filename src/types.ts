@@ -142,6 +142,12 @@ export interface VenueModel {
   exits?: VenueExit[] | undefined;
   /** Side rooms (sacristy, kitchen, WC) shown as labelled areas */
   rooms?: VenueRoom[] | undefined;
+  /** Reusable movable object definitions */
+  objectTypes?: VenueObjectType[] | undefined;
+  /** Named arrangements of movable objects */
+  layouts?: VenueLayout[] | undefined;
+  /** Layout in use (default: the first one) */
+  activeLayout?: string | undefined;
   /** Where the geometry came from and whether it was measured */
   source?: { method?: string | undefined; pixelsPerMeter?: number | undefined; verified?: boolean | undefined } | undefined;
 }
@@ -165,6 +171,36 @@ export interface VenueFurniture {
   /** Counter-clockwise rotation about +Z in degrees (from +X towards +Y) */
   rotationDeg?: number | undefined;
   color?: string | undefined;
+  /** Set on items that come from a layout placement (movable objects) */
+  movable?: boolean | undefined;
+  typeId?: string | undefined;
+  layoutId?: string | undefined;
+}
+
+/** A reusable object definition (e.g. one altar rail section, a lectern, a chair, a Christmas tree). */
+export interface VenueObjectType {
+  id: string;
+  name: string;
+  kind: VenueFurniture['kind'];
+  shape?: 'box' | 'cylinder' | undefined;
+  size: { width: number; depth: number; height: number };
+  color?: string | undefined;
+}
+
+/** One movable object placed in a layout. */
+export interface VenuePlacement {
+  id: string;
+  typeId: string;
+  name?: string | undefined;
+  center: Point3D;
+  rotationDeg?: number | undefined;
+}
+
+/** A named arrangement of movable objects (normal service, Christmas, concert...). */
+export interface VenueLayout {
+  id: string;
+  name: string;
+  placements: VenuePlacement[];
 }
 
 export interface VenueStair {

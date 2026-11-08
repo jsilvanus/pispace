@@ -1,15 +1,34 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import fastify, { type FastifyInstance } from 'fastify';
+import fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
 import type { AppConfig } from './config.js';
 import type { SpatialSceneManager } from './scene/spatial-scene.js';
 import type { BoundingBox2D, Point3D, ShotType } from './types.js';
 import { getZoneById, getZoneTargetPoint, validateVenueModel } from './venue/model.js';
 import { renderVenueSvg } from './venue/svg-map.js';
+import { getActiveLayout, resolveFurniture } from './venue/layouts.js';
 import { solvePtzForTarget } from './camera/solver.js';
 import { getCameraWorldPose, projectBoundingBoxToFloor, triangulateCameras } from './camera/projection.js';
 import { findZoneAtPoint } from './venue/model.js';
+
+/** Venue changes need PISPACE_EDIT_KEY as a Bearer token. Sends 403/401 and returns false otherwise. */
+function makeEditKeyCheck(editKey: string | undefined) {
+  return (authorization: string | undefined, reply: FastifyReply): boolean => {
+    if (!editKey) {
+      reply.code(403).send({ error: 'Venue editing is off: set PISPACE_EDIT_KEY' });
+      return false;
+    }
+    const auth = authorization ?? '';
+    const given = Buffer.from(auth.startsWith('Bearer ') ? auth.slice(7) : '');
+    const want = Buffer.from(editKey);
+    if (given.length !== want.length || !crypto.timingSafeEqual(given, want)) {
+      reply.code(401).send({ error: 'Invalid or missing edit key' });
+      return false;
+    }
+    return true;
+  };
+}
 
 export function createServer(
   sceneManager: SpatialSceneManager,
@@ -18,6 +37,7 @@ export function createServer(
   const app = fastify({
     logger: false,
   });
+  const checkEditKey = makeEditKeyCheck(config.editKey);
 
   // Health check
   app.get('/health', async () => {
@@ -32,15 +52,7 @@ export function createServer(
   // Replace the venue model (church-3d-mapper push). Needs PISPACE_EDIT_KEY; kept in memory
   // only, so the venue file stays the source of truth after a restart.
   app.put('/api/v1/venue', { bodyLimit: 5 * 1024 * 1024 }, async (req, reply) => {
-    if (!config.editKey) {
-      return reply.code(403).send({ error: 'Venue editing is off: set PISPACE_EDIT_KEY' });
-    }
-    const auth = req.headers.authorization ?? '';
-    const given = Buffer.from(auth.startsWith('Bearer ') ? auth.slice(7) : '');
-    const want = Buffer.from(config.editKey);
-    if (given.length !== want.length || !crypto.timingSafeEqual(given, want)) {
-      return reply.code(401).send({ error: 'Invalid or missing edit key' });
-    }
+    if (!checkEditKey(req.headers.authorization, reply)) return reply;
     try {
       const venue = validateVenueModel(req.body);
       sceneManager.setVenue(venue);
@@ -50,8 +62,47 @@ export function createServer(
     }
   });
 
-  // Top-down SVG map of the venue (?level=<levels id>&scale=<px per m>&zones=0)
-  app.get<{ Querystring: { level?: string; scale?: string; zones?: string } }>('/api/v1/venue/map.svg', async (req, reply) => {
+  // Layouts of movable objects (normal service, Christmas, concert ...)
+  app.get('/api/v1/venue/layouts', async () => {
+    const venue = sceneManager.venue;
+    return {
+      active: getActiveLayout(venue)?.id ?? null,
+      objectTypes: venue.objectTypes ?? [],
+      layouts: (venue.layouts ?? []).map((l) => ({ id: l.id, name: l.name, placements: l.placements.length })),
+    };
+  });
+
+  // Fixed furniture plus the movable objects of a layout (?layout=<id>, default active)
+  app.get<{ Querystring: { layout?: string } }>('/api/v1/venue/furniture', async (req, reply) => {
+    if (req.query.layout && !(sceneManager.venue.layouts ?? []).some((l) => l.id === req.query.layout)) {
+      return reply.code(404).send({ error: 'Unknown layout' });
+    }
+    return resolveFurniture(sceneManager.venue, req.query.layout);
+  });
+
+  // Switch the active layout (edit key)
+  app.post<{ Body: { layoutId?: string } }>('/api/v1/venue/layout', async (req, reply) => {
+    if (!checkEditKey(req.headers.authorization, reply)) return reply;
+    const id = req.body?.layoutId;
+    if (typeof id !== 'string' || !sceneManager.setActiveLayout(id)) {
+      return reply.code(404).send({ error: 'Unknown layout' });
+    }
+    return { ok: true, active: id };
+  });
+
+  // Move one movable object of the active layout, e.g. the lectern during a service (edit key)
+  app.patch<{ Params: { id: string }; Body: { center?: { x?: number; y?: number; z?: number }; rotationDeg?: number } }>(
+    '/api/v1/venue/placements/:id',
+    async (req, reply) => {
+      if (!checkEditKey(req.headers.authorization, reply)) return reply;
+      const moved = sceneManager.movePlacement(req.params.id, req.body ?? {});
+      if (!moved) return reply.code(404).send({ error: 'No such placement in the active layout' });
+      return { ok: true, placement: moved };
+    },
+  );
+
+  // Top-down SVG map of the venue (?level=<levels id>&layout=<id>&scale=<px per m>&zones=0)
+  app.get<{ Querystring: { level?: string; layout?: string; scale?: string; zones?: string } }>('/api/v1/venue/map.svg', async (req, reply) => {
     const scale = req.query.scale ? Number(req.query.scale) : undefined;
     if (scale !== undefined && (!Number.isFinite(scale) || scale < 2 || scale > 200)) {
       return reply.code(400).send({ error: 'scale must be between 2 and 200' });
@@ -59,8 +110,11 @@ export function createServer(
     if (req.query.level && !(sceneManager.venue.levels ?? []).some((l) => l.id === req.query.level)) {
       return reply.code(404).send({ error: 'Unknown level' });
     }
+    if (req.query.layout && !(sceneManager.venue.layouts ?? []).some((l) => l.id === req.query.layout)) {
+      return reply.code(404).send({ error: 'Unknown layout' });
+    }
     reply.header('Content-Type', 'image/svg+xml; charset=utf-8');
-    return renderVenueSvg(sceneManager.venue, { level: req.query.level, scale, zones: req.query.zones !== '0' });
+    return renderVenueSvg(sceneManager.venue, { level: req.query.level, layout: req.query.layout, scale, zones: req.query.zones !== '0' });
   });
 
   // Current live scene
@@ -355,11 +409,18 @@ export function createServer(
       reply.raw.write(`event: subject-left-zone\ndata: ${JSON.stringify(evt)}\n\n`);
     };
 
+    const onVenueUpdated = () => {
+      const v = sceneManager.venue;
+      reply.raw.write(`event: venue-updated\ndata: ${JSON.stringify({ name: v.name, activeLayout: getActiveLayout(v)?.id ?? null })}\n\n`);
+    };
+
+    sceneManager.on('venue-updated', onVenueUpdated);
     sceneManager.on('scene-updated', onSceneUpdated);
     sceneManager.on('subject-entered-zone', onZoneEntered);
     sceneManager.on('subject-left-zone', onZoneLeft);
 
     req.raw.on('close', () => {
+      sceneManager.off('venue-updated', onVenueUpdated);
       sceneManager.off('scene-updated', onSceneUpdated);
       sceneManager.off('subject-entered-zone', onZoneEntered);
       sceneManager.off('subject-left-zone', onZoneLeft);
