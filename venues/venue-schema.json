@@ -2,44 +2,97 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "PispaceVenueModel",
   "type": "object",
-  "required": ["name", "dimensions", "cameras", "zones"],
+  "required": [
+    "name",
+    "dimensions",
+    "cameras",
+    "zones"
+  ],
   "properties": {
-    "name": { "type": "string" },
-    "description": { "type": "string" },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
     "dimensions": {
       "type": "object",
-      "required": ["widthMeters", "lengthMeters", "heightMeters"],
+      "required": [
+        "widthMeters",
+        "lengthMeters",
+        "heightMeters"
+      ],
       "properties": {
-        "widthMeters": { "type": "number", "minimum": 0 },
-        "lengthMeters": { "type": "number", "minimum": 0 },
-        "heightMeters": { "type": "number", "minimum": 0 }
+        "widthMeters": {
+          "type": "number",
+          "minimum": 0
+        },
+        "lengthMeters": {
+          "type": "number",
+          "minimum": 0
+        },
+        "heightMeters": {
+          "type": "number",
+          "minimum": 0
+        }
       }
     },
-    "originDescription": { "type": "string" },
+    "originDescription": {
+      "type": "string"
+    },
     "cameras": {
       "type": "object",
       "additionalProperties": {
         "type": "object",
-        "required": ["id", "name", "position", "baseOrientation"],
+        "required": [
+          "id",
+          "name",
+          "position",
+          "baseOrientation"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
           "position": {
             "type": "object",
-            "required": ["x", "y", "z"],
+            "required": [
+              "x",
+              "y",
+              "z"
+            ],
             "properties": {
-              "x": { "type": "number" },
-              "y": { "type": "number" },
-              "z": { "type": "number" }
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
             }
           },
           "baseOrientation": {
             "type": "object",
-            "required": ["pan", "tilt", "roll"],
+            "required": [
+              "pan",
+              "tilt",
+              "roll"
+            ],
             "properties": {
-              "pan": { "type": "number" },
-              "tilt": { "type": "number" },
-              "roll": { "type": "number" }
+              "pan": {
+                "type": "number"
+              },
+              "tilt": {
+                "type": "number"
+              },
+              "roll": {
+                "type": "number"
+              }
             }
           }
         }
@@ -49,26 +102,51 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name", "floorHeight", "ceilingHeight", "polygon"],
+        "required": [
+          "id",
+          "name",
+          "floorHeight",
+          "ceilingHeight",
+          "polygon"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "floorHeight": { "type": "number" },
-          "ceilingHeight": { "type": "number" },
-          "color": { "type": "string" },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "floorHeight": {
+            "type": "number"
+          },
+          "ceilingHeight": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          },
           "tags": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "polygon": {
             "type": "array",
             "minItems": 3,
             "items": {
               "type": "object",
-              "required": ["x", "y"],
+              "required": [
+                "x",
+                "y"
+              ],
               "properties": {
-                "x": { "type": "number" },
-                "y": { "type": "number" }
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
               }
             }
           }
@@ -80,47 +158,480 @@
       "description": "3D physical structures that block virtual graphics (holdout / keymask meshes)",
       "items": {
         "type": "object",
-        "required": ["id", "name", "kind", "position"],
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "position"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "kind": { "type": "string", "enum": ["mesh", "box", "cylinder", "polygon_wall", "table"] },
-          "meshUrl": { "type": "string", "description": "URI to .glb / .gltf 3D model asset" },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "mesh",
+              "box",
+              "cylinder",
+              "polygon_wall",
+              "table"
+            ]
+          },
+          "meshUrl": {
+            "type": "string",
+            "description": "URI to .glb / .gltf 3D model asset"
+          },
           "position": {
             "type": "object",
-            "required": ["x", "y", "z"],
+            "required": [
+              "x",
+              "y",
+              "z"
+            ],
             "properties": {
-              "x": { "type": "number" },
-              "y": { "type": "number" },
-              "z": { "type": "number" }
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
             }
           },
           "rotation": {
             "type": "object",
             "properties": {
-              "x": { "type": "number" },
-              "y": { "type": "number" },
-              "z": { "type": "number" }
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
             }
           },
           "scale": {
             "type": "object",
             "properties": {
-              "x": { "type": "number" },
-              "y": { "type": "number" },
-              "z": { "type": "number" }
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
             }
           },
           "dimensions": {
             "type": "object",
             "properties": {
-              "width": { "type": "number" },
-              "height": { "type": "number" },
-              "depth": { "type": "number" }
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              },
+              "depth": {
+                "type": "number"
+              }
             }
           }
         }
       }
+    },
+    "floors": {
+      "type": "array",
+      "description": "Floor slabs and raised platforms",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "elevation",
+          "polygon"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "elevation": {
+            "type": "number"
+          },
+          "thickness": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          },
+          "polygon": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "object",
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "walls": {
+      "type": "array",
+      "description": "Wall segments; bottomZ > 0 makes an open-bottom header or parapet",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "start",
+          "end",
+          "bottomZ",
+          "topZ",
+          "thickness"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "start": {
+            "type": "object",
+            "required": [
+              "x",
+              "y"
+            ],
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            }
+          },
+          "end": {
+            "type": "object",
+            "required": [
+              "x",
+              "y"
+            ],
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            }
+          },
+          "bottomZ": {
+            "type": "number"
+          },
+          "topZ": {
+            "type": "number"
+          },
+          "thickness": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          },
+          "seeThrough": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "levels": {
+      "type": "array",
+      "description": "Named storeys",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "elevation"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "elevation": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "furniture": {
+      "type": "array",
+      "description": "Pews, tables, altar, pulpit, organ and other furnishings",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "center",
+          "size"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "pew",
+              "table",
+              "altar",
+              "pulpit",
+              "rail",
+              "organ",
+              "piano",
+              "bench",
+              "other"
+            ]
+          },
+          "shape": {
+            "type": "string",
+            "enum": [
+              "box",
+              "cylinder"
+            ]
+          },
+          "center": {
+            "type": "object",
+            "required": [
+              "x",
+              "y",
+              "z"
+            ],
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
+            }
+          },
+          "size": {
+            "type": "object",
+            "required": [
+              "width",
+              "depth",
+              "height"
+            ],
+            "properties": {
+              "width": {
+                "type": "number",
+                "minimum": 0
+              },
+              "depth": {
+                "type": "number",
+                "minimum": 0
+              },
+              "height": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          },
+          "rotationDeg": {
+            "type": "number",
+            "description": "Counter-clockwise about +Z, from +X towards +Y"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "stairs": {
+      "type": "array",
+      "description": "Stairs and ramps",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "polygon",
+          "fromZ",
+          "toZ"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "polygon": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "object",
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "fromZ": {
+            "type": "number"
+          },
+          "toZ": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "exits": {
+      "type": "array",
+      "description": "Doors and escape-route exits",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "position"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "object",
+            "required": [
+              "x",
+              "y",
+              "z"
+            ],
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
+            }
+          },
+          "level": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rooms": {
+      "type": "array",
+      "description": "Side rooms shown as labelled areas",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "floorZ",
+          "polygon"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "floorZ": {
+            "type": "number"
+          },
+          "polygon": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "object",
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "pixelsPerMeter": {
+          "type": "number"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "$schema": {
+      "type": "string"
     }
   }
 }

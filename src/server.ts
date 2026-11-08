@@ -1,10 +1,12 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import fastify, { type FastifyInstance } from 'fastify';
 import type { AppConfig } from './config.js';
 import type { SpatialSceneManager } from './scene/spatial-scene.js';
 import type { BoundingBox2D, Point3D, ShotType } from './types.js';
-import { getZoneById, getZoneTargetPoint } from './venue/model.js';
+import { getZoneById, getZoneTargetPoint, validateVenueModel } from './venue/model.js';
+import { renderVenueSvg } from './venue/svg-map.js';
 import { solvePtzForTarget } from './camera/solver.js';
 import { getCameraWorldPose, projectBoundingBoxToFloor, triangulateCameras } from './camera/projection.js';
 import { findZoneAtPoint } from './venue/model.js';
@@ -25,6 +27,40 @@ export function createServer(
   // Current venue model (geometry, dimensions, cameras, zones)
   app.get('/api/v1/venue', async () => {
     return sceneManager.venue;
+  });
+
+  // Replace the venue model (church-3d-mapper push). Needs PISPACE_EDIT_KEY; kept in memory
+  // only, so the venue file stays the source of truth after a restart.
+  app.put('/api/v1/venue', { bodyLimit: 5 * 1024 * 1024 }, async (req, reply) => {
+    if (!config.editKey) {
+      return reply.code(403).send({ error: 'Venue editing is off: set PISPACE_EDIT_KEY' });
+    }
+    const auth = req.headers.authorization ?? '';
+    const given = Buffer.from(auth.startsWith('Bearer ') ? auth.slice(7) : '');
+    const want = Buffer.from(config.editKey);
+    if (given.length !== want.length || !crypto.timingSafeEqual(given, want)) {
+      return reply.code(401).send({ error: 'Invalid or missing edit key' });
+    }
+    try {
+      const venue = validateVenueModel(req.body);
+      sceneManager.setVenue(venue);
+      return { ok: true, name: venue.name, zones: venue.zones.length, persisted: false };
+    } catch (err) {
+      return reply.code(400).send({ error: (err as Error).message });
+    }
+  });
+
+  // Top-down SVG map of the venue (?level=<levels id>&scale=<px per m>&zones=0)
+  app.get<{ Querystring: { level?: string; scale?: string; zones?: string } }>('/api/v1/venue/map.svg', async (req, reply) => {
+    const scale = req.query.scale ? Number(req.query.scale) : undefined;
+    if (scale !== undefined && (!Number.isFinite(scale) || scale < 2 || scale > 200)) {
+      return reply.code(400).send({ error: 'scale must be between 2 and 200' });
+    }
+    if (req.query.level && !(sceneManager.venue.levels ?? []).some((l) => l.id === req.query.level)) {
+      return reply.code(404).send({ error: 'Unknown level' });
+    }
+    reply.header('Content-Type', 'image/svg+xml; charset=utf-8');
+    return renderVenueSvg(sceneManager.venue, { level: req.query.level, scale, zones: req.query.zones !== '0' });
   });
 
   // Current live scene
