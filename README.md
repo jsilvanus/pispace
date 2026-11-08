@@ -91,7 +91,11 @@ Configured for the church's two **AVer PTZ330** cameras:
 - `GET /health`: Health check (`{ ok: true, service: "pispace" }`).
 - `GET /api/v1/venue`: The whole venue model.
 - `PUT /api/v1/venue`: Replace the venue model (used by `church-3d-mapper push`). Needs `Authorization: Bearer <PISPACE_EDIT_KEY>`; answers 403 while `PISPACE_EDIT_KEY` is unset. The new model lives in memory only: after a restart pispace reads `PISPACE_VENUE_FILE` again, so save the edited file there too.
-- `GET /api/v1/venue/map.svg?level=<id>&scale=<px per m>&zones=0`: Top-down map of walls, floors, furniture, stairs, exits, rooms, zones and cameras. `level` (an id from `levels`) fades everything not on that storey.
+- `GET /api/v1/venue/map.svg?level=<id>&layout=<id>&scale=<px per m>&zones=0`: Top-down map of walls, floors, furniture, stairs, exits, rooms, zones and cameras. `level` (an id from `levels`) fades everything not on that storey.
+- `GET /api/v1/venue/layouts`: Object types, layouts and the active layout.
+- `GET /api/v1/venue/furniture?layout=<id>`: Fixed furniture plus the movable objects of a layout (default: active).
+- `POST /api/v1/venue/layout` `{ "layoutId": "christmas" }`: Switch the active layout (edit key).
+- `PATCH /api/v1/venue/placements/:id` `{ "center": { "x": 1.5 }, "rotationDeg": 90 }`: Move one movable object of the active layout, e.g. the lectern during a service (edit key).
 - `GET /api/v1/scene`: Current live spatial scene (all cameras, 3D tracked subjects, active zones).
 - `GET /api/v1/zones`: List all defined 3D venue zones with target centers.
 - `GET /api/v1/zones/:zoneId`: Detailed polygon and parameters for a specific zone.
@@ -112,7 +116,9 @@ Configured for the church's two **AVer PTZ330** cameras:
 
 ### Venue file: map elements
 
-Besides `zones`, `cameras`, `occluders`, `floors` and `walls`, a venue file can carry optional map elements (schema: `venues/venue-schema.json`): `levels` (storeys with an elevation), `furniture` (pews, tables, altar, pulpit, rail, organ, piano; a box or cylinder with `center` at its base, `size` and `rotationDeg` counter-clockwise from +X), `stairs` (polygon, `fromZ`, `toZ`), `exits` (doors and escape-route exits) and `rooms` (side rooms). A site's real layout belongs in the site's own private repository and is loaded with `PISPACE_VENUE_FILE`; `venues/keskuskirkko.json` here is only a rough example.
+Besides `zones`, `cameras`, `occluders`, `floors` and `walls`, a venue file can carry optional map elements (schema: `venues/venue-schema.json`): `levels` (storeys with an elevation), `furniture` (pews, tables, altar, pulpit, rail, organ, piano; a box or cylinder with `center` at its base, `size` and `rotationDeg` counter-clockwise from +X), `stairs` (polygon, `fromZ`, `toZ`), `exits` (doors and escape-route exits) and `rooms` (side rooms). Movable things (altar rail sections, lectern, chairs, a Christmas tree) are `objectTypes` (a reusable definition: kind, shape, size, colour) placed in named `layouts` (`placements`: `id`, `typeId`, `center`, `rotationDeg`). `activeLayout` picks the layout in use (default: the first). Switching layouts and moving placements over the API is live and in memory only, and each change is sent as a `venue-updated` event on `/api/v1/events`. Fixed furniture stays in `furniture`.
+
+A site's real layout belongs in the site's own private repository and is loaded with `PISPACE_VENUE_FILE`; `venues/keskuskirkko.json` here is only a rough example.
 
 ---
 

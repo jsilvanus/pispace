@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { VenueModel, SpatialZone, Point3D } from '../types.js';
 import { pointInSpatialZone, polygonCentroid } from '../math/polygon.js';
+import { validateLayouts } from './layouts.js';
 
 export function findZoneAtPoint(venue: VenueModel, point: Point3D): SpatialZone | null {
   // Sort zones by floor height descending so elevated structures (e.g. Pulpit) take precedence over general chancel
@@ -55,6 +56,7 @@ export function validateVenueModel(data: unknown): VenueModel {
   }
 
   validateOptionalArrays(v);
+  validateLayouts(data as VenueModel);
   return data as VenueModel;
 }
 

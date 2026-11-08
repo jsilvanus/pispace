@@ -6,7 +6,10 @@ import type {
   CameraFreeDTelemetry,
   Subject3D,
   BoundingBox2D,
+  Point3D,
+  VenuePlacement,
 } from '../types.js';
+import { getActiveLayout } from '../venue/layouts.js';
 import {
   getCameraWorldPose,
   computeCameraFrustum,
@@ -48,6 +51,30 @@ export class SpatialSceneManager extends EventEmitter {
     this.syncCameras();
     this.subjects.clear();
     this.emit('venue-updated', venue);
+  }
+
+  /** Switches the layout of movable objects (e.g. normal -> Christmas). */
+  public setActiveLayout(layoutId: string): boolean {
+    if (!(this.currentVenue.layouts ?? []).some((l) => l.id === layoutId)) return false;
+    this.currentVenue = { ...this.currentVenue, activeLayout: layoutId };
+    this.emit('venue-updated', this.currentVenue);
+    return true;
+  }
+
+  /** Moves one placement of the active layout (live change during a service). */
+  public movePlacement(placementId: string, change: { center?: Partial<Point3D>; rotationDeg?: number }): VenuePlacement | null {
+    const layout = getActiveLayout(this.currentVenue);
+    const p = layout?.placements.find((x) => x.id === placementId);
+    if (!p) return null;
+    if (change.center) {
+      for (const k of ['x', 'y', 'z'] as const) {
+        const v = change.center[k];
+        if (typeof v === 'number' && Number.isFinite(v)) p.center[k] = v;
+      }
+    }
+    if (typeof change.rotationDeg === 'number' && Number.isFinite(change.rotationDeg)) p.rotationDeg = change.rotationDeg;
+    this.emit('venue-updated', this.currentVenue);
+    return p;
   }
 
   private syncCameras(): void {
