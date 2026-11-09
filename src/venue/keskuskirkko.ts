@@ -10,7 +10,6 @@ import type { VenueModel } from '../types.js';
  * +Z: Elevation height in meters above nave floor
  */
 export const KESKUSKIRKKO_VENUE: VenueModel = {
-  "$schema": "./venue-schema.json",
   "name": "Riihimäen Keskuskirkko",
   "description": "Photogrammetry digital twin of Riihimäen Keskuskirkko with Chancel, Altar, Pulpit, Lectern, Choir, and Organ Gallery",
   "modelUrl": "models/church.glb",
