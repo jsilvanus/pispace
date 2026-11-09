@@ -12,13 +12,13 @@ test('load and validate venue from JSON file', () => {
   assert.ok(venue.cameras.cam2);
   assert.ok(venue.zones.length >= 6);
 
-  // Test Pulpit coordinates: x = -3.5, y = -3.0, z = 1.5
-  const pulpitZone = findZoneAtPoint(venue, { x: -3.5, y: -3.0, z: 1.5 });
+  // Test Pulpit coordinates: x = -3.5, y = 0.5, z = 1.3
+  const pulpitZone = findZoneAtPoint(venue, { x: -3.5, y: 0.5, z: 1.3 });
   assert.ok(pulpitZone);
   assert.equal(pulpitZone.id, 'pulpit');
 
-  // Test Altar coordinates: x = 0.0, y = 0.8, z = 0.5
-  const altarZone = findZoneAtPoint(venue, { x: 0.0, y: 0.8, z: 0.5 });
+  // Test Altar coordinates: x = 0.0, y = 2.0, z = 0.4
+  const altarZone = findZoneAtPoint(venue, { x: 0.0, y: 2.0, z: 0.4 });
   assert.ok(altarZone);
   assert.equal(altarZone.id, 'altar');
 
