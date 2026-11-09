@@ -118,6 +118,7 @@ export interface VenueWall {
 export interface VenueModel {
   name: string;
   description: string;
+  modelUrl?: string | undefined;
   dimensions: {
     widthMeters: number;
     lengthMeters: number;
