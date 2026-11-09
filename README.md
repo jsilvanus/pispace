@@ -118,7 +118,7 @@ Configured for the church's two **AVer PTZ330** cameras:
 
 Besides `zones`, `cameras`, `occluders`, `floors` and `walls`, a venue file can carry optional map elements (schema: `venues/venue-schema.json`): `levels` (storeys with an elevation), `furniture` (pews, tables, altar, pulpit, rail, organ, piano; a box or cylinder with `center` at its base, `size` and `rotationDeg` counter-clockwise from +X), `stairs` (polygon, `fromZ`, `toZ`), `exits` (doors and escape-route exits) and `rooms` (side rooms). Movable things (altar rail sections, lectern, chairs, a Christmas tree) are `objectTypes` (a reusable definition: kind, shape, size, colour) placed in named `layouts` (`placements`: `id`, `typeId`, `center`, `rotationDeg`). `activeLayout` picks the layout in use (default: the first). Switching layouts and moving placements over the API is live and in memory only, and each change is sent as a `venue-updated` event on `/api/v1/events`. Fixed furniture stays in `furniture`.
 
-A site's real layout belongs in the site's own private repository and is loaded with `PISPACE_VENUE_FILE`; `venues/keskuskirkko.json` here is only a rough example.
+A site's real layout belongs in the site's own private repository and is loaded with `PISPACE_VENUE_FILE`; `venues/keskuskirkko.json` here is only a rough example. Meshes for that venue (a scan for `modelUrl`, mesh occluders) go in the same private place: pispace serves `GET /models/:filename` from `PISPACE_MODELS_DIR`, or from `models/` next to `PISPACE_VENUE_FILE` when that is unset, and falls back to this repository's `models/` for generic models.
 
 ---
 

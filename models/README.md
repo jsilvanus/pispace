@@ -1,8 +1,10 @@
-# 3D Model Assets for AR Keymasking
+# 3D model assets
 
-Store 3D triangle mesh models (`.glb` / `.gltf` binary glTF) in this directory.
+pispace serves `.glb` / `.gltf` files at `GET /models/:filename` (used by the venue `modelUrl` and by occluders with `kind: "mesh"`).
 
-These models represent physical architecture in the sanctuary (e.g. `pulpit-facade.glb`, `communion-rail.glb`, `altar.glb`) and are loaded by broadcast graphics compositors (Three.js, WebGL, Unreal Engine) as **Holdout / Occlusion Mattes** to cleanly occlude virtual 3D graphics.
+Site models such as a building scan do not belong in this public repository. Keep them with the private venue data and point pispace at them:
 
-Models in this directory are served by `pispace` at:
-`GET http://localhost:3203/models/:filename`
+- `PISPACE_MODELS_DIR=/path/to/models`, or
+- leave it unset: pispace looks in `models/` next to `PISPACE_VENUE_FILE`, then in this folder.
+
+This folder only holds generic models, e.g. `aver-ptz330.glb` (camera body, made by `church-3d-mapper/scripts/create_aver_ptz330.mjs`).

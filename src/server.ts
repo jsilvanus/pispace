@@ -159,7 +159,9 @@ export function createServer(
   // Serve 3D model assets (.glb / .gltf)
   app.get<{ Params: { filename: string } }>('/models/:filename', async (req, reply) => {
     const filename = path.basename(req.params.filename);
-    const modelPath = path.resolve('models', filename);
+    let modelPath = path.resolve(config.modelsDir ?? 'models', filename);
+    // Generic models (e.g. camera CAD) ship with pispace; site models come from modelsDir.
+    if (!fs.existsSync(modelPath)) modelPath = path.resolve('models', filename);
 
     if (!fs.existsSync(modelPath)) {
       return reply.code(404).send({ error: `3D model ${filename} not found` });
