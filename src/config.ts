@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 export interface AppConfig {
   port: number;
   host: string;
@@ -7,6 +9,8 @@ export interface AppConfig {
   /** Bearer key that allows PUT /api/v1/venue. Unset = venue cannot be replaced over HTTP. */
   editKey?: string | undefined;
   corsOrigins?: string[] | undefined;
+  /** Folder served at /models/:filename (venue modelUrl and mesh occluders). */
+  modelsDir?: string | undefined;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -16,6 +20,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const venueFile = env.PISPACE_VENUE_FILE?.trim() || undefined;
   const apiKey = env.PISPACE_API_KEY?.trim() || undefined;
   const editKey = env.PISPACE_EDIT_KEY?.trim() || undefined;
+  // Site meshes (scans) live outside this repo: PISPACE_MODELS_DIR, else `models` next to the
+  // venue file, else ./models.
+  const modelsDir = env.PISPACE_MODELS_DIR?.trim()
+    || (venueFile ? path.join(path.dirname(path.resolve(venueFile)), 'models') : path.resolve('models'));
   const corsOrigins = env.PISPACE_CORS_ORIGINS
     ? env.PISPACE_CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)
     : undefined;
@@ -28,5 +36,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     apiKey,
     editKey,
     corsOrigins,
+    modelsDir,
   };
 }
