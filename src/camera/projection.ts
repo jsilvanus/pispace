@@ -80,7 +80,8 @@ export function castImageRay(
   });
 
   // World rotation matrix for Camera
-  const rZ = mat4RotationZ(degToRad(pose.panDeg));
+  // Pan is clockwise seen from above (0° = +Y, 90° = +X), so rotate about Z by -pan.
+  const rZ = mat4RotationZ(degToRad(-pose.panDeg));
   const rX = mat4RotationX(degToRad(pose.tiltDeg));
   const rY = mat4RotationY(degToRad(pose.rollDeg));
   const rotMatrix = mat4Multiply(rZ, mat4Multiply(rX, rY));

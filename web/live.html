@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>pispace live</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #14171c; color: #e8ecf1; font: 13px system-ui, sans-serif; }
+    #view { position: absolute; inset: 0; }
+    #help { position: absolute; top: 8px; left: 8px; padding: 4px 8px; background: rgba(0,0,0,0.55); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="view"></div>
+  <div id="help">Drag to turn · right-drag or Shift-drag to move · wheel to zoom · click a camera, then a person or the floor</div>
+  <script type="module">
+    import { mountLiveView } from './web/live-view.js';
+    const view = await mountLiveView(document.getElementById('view'));
+    globalThis.pispaceLive = view;
+  </script>
+</body>
+</html>
