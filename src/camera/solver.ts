@@ -46,10 +46,9 @@ export function solvePtzForTarget(
   const distHoriz = Math.sqrt(dx * dx + dy * dy);
   const dist3D = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-  // Pan: angle around Z axis. Forward is +Y.
-  // Rotated forward vector is (-sin(pan), cos(pan)).
-  // Therefore, tan(pan) = -dx / dy => pan = atan2(-dx, dy)
-  const worldPanDeg = radToDeg(Math.atan2(-dx, dy));
+  // Pan: clockwise seen from above, 0° = +Y (towards the altar), 90° = +X.
+  // Forward vector is (sin(pan), cos(pan)), so pan = atan2(dx, dy).
+  const worldPanDeg = radToDeg(Math.atan2(dx, dy));
 
   // Tilt: angle above/below horizontal plane.
   const worldTiltDeg = radToDeg(Math.atan2(dz, Math.max(1e-6, distHoriz)));

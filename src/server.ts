@@ -11,6 +11,24 @@ import { getActiveLayout, resolveFurniture } from './venue/layouts.js';
 import { solvePtzForTarget } from './camera/solver.js';
 import { getCameraWorldPose, projectBoundingBoxToFloor, triangulateCameras } from './camera/projection.js';
 import { findZoneAtPoint } from './venue/model.js';
+import { fileURLToPath } from 'node:url';
+
+const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const WEB_DIR = path.join(PACKAGE_ROOT, 'web');
+/** The live view's own files, the only names /web/ serves. */
+const WEB_FILES: Record<string, string> = {
+  'live-view.js': 'text/javascript; charset=utf-8',
+  'live-geometry.js': 'text/javascript; charset=utf-8',
+};
+/** three.js build files the live view imports (three.module.js pulls in three.core.js). */
+const THREE_FILES = new Set(['three.module.js', 'three.core.js']);
+
+function resolveThreeBuild(): string | null {
+  for (const dir of [path.join(PACKAGE_ROOT, 'node_modules/three/build'), path.resolve('node_modules/three/build')]) {
+    if (fs.existsSync(path.join(dir, 'three.module.js'))) return dir;
+  }
+  return null;
+}
 
 /** Venue changes need PISPACE_EDIT_KEY as a Bearer token. Sends 403/401 and returns false otherwise. */
 function makeEditKeyCheck(editKey: string | undefined) {
@@ -38,6 +56,45 @@ export function createServer(
     logger: false,
   });
   const checkEditKey = makeEditKeyCheck(config.editKey);
+
+  // CORS for pages on other origins that embed the live view (PISPACE_CORS_ORIGINS, comma separated;
+  // '*' allows any). Unset = same origin only.
+  const corsOrigins = config.corsOrigins ?? [];
+  if (corsOrigins.length > 0) {
+    app.addHook('onRequest', async (req, reply) => {
+      const origin = req.headers.origin;
+      if (!origin) return;
+      if (!corsOrigins.includes('*') && !corsOrigins.includes(origin)) return;
+      reply.header('Access-Control-Allow-Origin', corsOrigins.includes('*') ? '*' : origin);
+      reply.header('Vary', 'Origin');
+      if (req.method === 'OPTIONS') {
+        reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+        reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        reply.header('Access-Control-Max-Age', '600');
+        return reply.code(204).send();
+      }
+    });
+  }
+
+  // Live 3D view: a standalone page and the embeddable module (web/live-view.js).
+  app.get('/live', async (_req, reply) => {
+    reply.header('Content-Type', 'text/html; charset=utf-8');
+    return reply.send(fs.createReadStream(path.join(WEB_DIR, 'live.html')));
+  });
+  app.get<{ Params: { file: string } }>('/web/:file', async (req, reply) => {
+    const type = WEB_FILES[req.params.file];
+    if (!type) return reply.code(404).send({ error: 'Not found' });
+    reply.header('Content-Type', type);
+    reply.header('Cache-Control', 'no-cache');
+    return reply.send(fs.createReadStream(path.join(WEB_DIR, req.params.file)));
+  });
+  const threeBuild = resolveThreeBuild();
+  app.get<{ Params: { file: string } }>('/vendor/three/:file', async (req, reply) => {
+    if (!threeBuild || !THREE_FILES.has(req.params.file)) return reply.code(404).send({ error: 'Not found' });
+    reply.header('Content-Type', 'text/javascript; charset=utf-8');
+    reply.header('Cache-Control', 'public, max-age=86400');
+    return reply.send(fs.createReadStream(path.join(threeBuild, req.params.file)));
+  });
 
   // Health check
   app.get('/health', async () => {

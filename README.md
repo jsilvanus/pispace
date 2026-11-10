@@ -110,7 +110,32 @@ Configured for the church's two **AVer PTZ330** cameras:
 - `POST /api/v1/project`: Casts a 2D bounding box `[ymin, xmin, ymax, xmax]` to 3D world space.
 - `POST /api/v1/freed`: Push FreeD telemetry directly.
 - `POST /api/v1/perception`: Push 2D bounding box detections directly.
-- `GET /api/v1/events`: Server-Sent Events (SSE) stream emitting `scene`, `subject-entered-zone`, and `subject-left-zone`.
+- `GET /api/v1/events`: Server-Sent Events (SSE) stream emitting `scene`, `subject-entered-zone`, `subject-left-zone` and `venue-updated`.
+- `GET /live`: Live 3D view (see below). `GET /web/live-view.js` is the embeddable module, `GET /vendor/three/three.module.js` the three.js copy it loads.
+
+**Angles.** Pan is clockwise seen from above: 0° looks along +Y (towards the altar), 90° along +X. Tilt is negative downwards. Camera `baseOrientation`, FreeD offsets and `solve-ptz` answers all use this, the same as church-3d-mapper. (Before 2026-11-10 the projection and the solver turned the other way, so a camera aimed in the mapper pointed mirrored in pispace.) `solve-ptz` returns `pan`/`tilt` relative to the camera's base orientation.
+
+### Live 3D view
+
+`/live` shows the venue (floors, walls, zones), every camera with its view pyramid (red = on air, yellow = selected) and every tracked person (a coloured figure per track, label with zone; people not seen for 5 s disappear). It reads `/api/v1/venue` once and then the `/api/v1/events` stream. Drag to turn, right-drag or Shift-drag to move, wheel to zoom.
+
+**Click to aim:** click a camera, then a person or a spot on the floor (the click lands on the floor height there: chancel, gallery). pispace solves pan/tilt/zoom with `solve-ptz`, the view draws the line and emits an `aim` event. The view never moves a real camera; whatever embeds it decides what to do with the solution (picam has no absolute pan/tilt endpoint yet).
+
+**Embedding in another program** (picontrol, church-3d-mapper, a kiosk page): the module has no build step and no framework.
+
+```js
+import { mountLiveView } from 'http://<pi>:3203/web/live-view.js';
+const view = await mountLiveView(document.getElementById('box'), {
+  baseUrl: 'http://<pi>:3203', // '' when served by pispace itself
+  // THREE,                     // pass your own three.js namespace if the page already has one
+  // aim: false,                // view only
+});
+view.on('aim', (s) => console.log(s.cameraId, s.pan, s.tilt, s.zoom, s.trackId));
+view.on('select-subject', (subject) => {});
+// view.selectCamera('cam1'); await view.aimAt({ x: 0, y: -5, z: 1.4 }); view.setScene(snapshot); view.destroy();
+```
+
+The same events are dispatched on the container as DOM events (`pispace:aim`, `pispace:scene`, `pispace:select-camera`, `pispace:select-subject`, `pispace:select-point`). Pure helpers (look direction, view pyramid corners, floor height under a point, track colours) are in `web/live-geometry.js`. A page on another origin needs `PISPACE_CORS_ORIGINS` (comma separated list of origins, or `*`); unset = same origin only.
 
 ---
 
