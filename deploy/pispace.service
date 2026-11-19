@@ -1,13 +1,14 @@
 [Unit]
-Description=pispace spatial engine and 3D venue twin
-After=network-online.target
+Description=PiSpace 3D Venue Digital Twin
+After=network-online.target pigateway.service
 
 [Service]
 WorkingDirectory=%h/apps/pispace
-EnvironmentFile=%h/apps/pispace/.env
-ExecStart=%h/.local/node/bin/node dist/main.js
-Restart=always
-RestartSec=2
+EnvironmentFile=%h/apps/pispace.env
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/bin/node dist/main.js
+Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=default.target
