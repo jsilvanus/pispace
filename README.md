@@ -190,3 +190,19 @@ This project is an integral component of the [Pi Production Ecosystem](file:///d
 > [!IMPORTANT]
 > Any changes to this repository's architectural role, API routes, communication protocols, exposed ports, dependencies, or runtime status **must be documented in the central `piecosystem` coordination repository** (`docs/projects-catalog.md` and `docs/inter-service-matrix.md`).
 > Always verify cross-system health with `npm run status` in `D:\piecosystem`.
+
+---
+
+## Deploying on a Pi
+
+`deploy/pispace.service` is a user systemd unit (same layout as pigateway: `~/apps/pispace`, Node in `~/.local/node`), `deploy/pispace.env.example` the env template.
+
+```bash
+cd ~/apps/pispace && git pull && pnpm install --frozen-lockfile && pnpm build
+mkdir -p ~/.config/systemd/user && cp deploy/pispace.service ~/.config/systemd/user/
+cp -n deploy/pispace.env.example .env   # then set the venue paths and PISPACE_EDIT_KEY
+systemctl --user daemon-reload && systemctl --user enable --now pispace
+curl http://127.0.0.1:3203/health
+```
+
+The site's venue file and scan come from the private site repository (`PISPACE_VENUE_FILE`, `PISPACE_MODELS_DIR`); never copy them into this repo. Deploy from `main` only.
