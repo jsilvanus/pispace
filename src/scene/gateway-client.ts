@@ -7,6 +7,16 @@ export interface GatewayClientOptions {
   reconnectDelayMs?: number | undefined;
 }
 
+/** Gateway event types pispace handles. Sent as `?types=` so the gateway skips everything else. */
+export const GATEWAY_EVENT_TYPES = ['freed', 'perception'] as const;
+
+/** Debounce for pushing the scene to the gateway. */
+export const SCENE_PUSH_DEBOUNCE_MS = 250;
+
+export function gatewayEventsUrl(gatewayUrl: string): string {
+  return `${gatewayUrl.replace(/\/+$/, '')}/api/v1/events?types=${GATEWAY_EVENT_TYPES.join(',')}`;
+}
+
 export class GatewayClient {
   private readonly gatewayUrl: string;
   private readonly apiKey?: string | undefined;
@@ -15,6 +25,7 @@ export class GatewayClient {
   private abortController: AbortController | null = null;
   private running = false;
   private scenePushDebounceTimer: NodeJS.Timeout | null = null;
+  private lastPushedJson: string | null = null;
 
   private readonly onSceneUpdated = (scene: SpatialScene) => {
     this.scheduleScenePush(scene);
@@ -92,12 +103,17 @@ export class GatewayClient {
 
     this.scenePushDebounceTimer = setTimeout(() => {
       this.scenePushDebounceTimer = null;
-      this.pushSceneToGateway(scene);
-    }, 100);
+      // Push the state at fire time (the scene captured when the timer was armed is stale by now).
+      void this.pushSceneToGateway(this.sceneManager.getSnapshot());
+    }, SCENE_PUSH_DEBOUNCE_MS);
     this.scenePushDebounceTimer.unref();
   }
 
   public async pushSceneToGateway(scene: SpatialScene): Promise<void> {
+    // Skip when nothing but the timestamp changed.
+    const json = JSON.stringify(scene);
+    const comparable = json.replace(/"updatedAt":"[^"]*"/, '');
+    if (comparable === this.lastPushedJson) return;
     try {
       const url = `${this.gatewayUrl}/api/v1/spatial/scene`;
       const headers: Record<string, string> = {
@@ -110,8 +126,9 @@ export class GatewayClient {
       await fetch(url, {
         method: 'PUT',
         headers,
-        body: JSON.stringify(scene),
+        body: json,
       });
+      this.lastPushedJson = comparable;
     } catch {
       // Gateway may be offline or starting up; will retry on next change
     }
@@ -149,7 +166,7 @@ export class GatewayClient {
     while (this.running) {
       try {
         this.abortController = new AbortController();
-        const eventsUrl = `${this.gatewayUrl}/api/v1/events`;
+        const eventsUrl = gatewayEventsUrl(this.gatewayUrl);
 
         const res = await fetch(eventsUrl, {
           signal: this.abortController.signal,
@@ -163,6 +180,7 @@ export class GatewayClient {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let eventName: string | undefined;
 
         while (this.running) {
           const { done, value } = await reader.read();
@@ -174,9 +192,12 @@ export class GatewayClient {
 
           for (const line of lines) {
             const trimmed = line.trim();
-            if (trimmed.startsWith('data:')) {
+            if (trimmed.startsWith('event:')) {
+              eventName = trimmed.slice(6).trim();
+            } else if (trimmed.startsWith('data:')) {
               const rawData = trimmed.slice(5).trim();
-              this.handleGatewayEvent(rawData);
+              this.handleGatewayEvent(rawData, eventName);
+              eventName = undefined;
             }
           }
         }
@@ -188,15 +209,25 @@ export class GatewayClient {
     }
   }
 
-  private handleGatewayEvent(rawData: string): void {
+  /**
+   * `eventName` is the SSE `event:` field. pigateway sends the bare payload as `data:` with the type
+   * in `event:`; older gateways wrap it as `{ type, data }`. Both are accepted, and types we do not
+   * use are ignored before any work (so an older gateway that ignores `?types=` costs only a parse).
+   */
+  public handleGatewayEvent(rawData: string, eventName?: string): void {
+    if (eventName && !(GATEWAY_EVENT_TYPES as readonly string[]).includes(eventName)) return;
     try {
       const evt = JSON.parse(rawData);
       if (!evt || typeof evt !== 'object') return;
 
-      if (evt.type === 'freed' && evt.data) {
-        this.sceneManager.updateFreed(evt.data as CameraFreeDTelemetry);
-      } else if (evt.type === 'perception' && evt.data) {
-        const { cameraId, objects } = evt.data;
+      const type: unknown = eventName ?? evt.type;
+      const data: unknown = eventName && evt.type !== eventName ? evt : evt.data;
+      if (!data || typeof data !== 'object') return;
+
+      if (type === 'freed') {
+        this.sceneManager.updateFreed(data as CameraFreeDTelemetry);
+      } else if (type === 'perception') {
+        const { cameraId, objects } = data as { cameraId?: string; objects?: unknown };
         if (cameraId && Array.isArray(objects)) {
           this.sceneManager.updateDetections(cameraId, objects);
         }
